@@ -1,5 +1,8 @@
-import jwt from "jsonwebtoken"
-export default (payload) => {
-    const token = jwt.sign(payload, process.env.secrete_key)
-    return token
-}
+const jwt = require("jsonwebtoken");
+
+const generateJwt = (payload) => {
+  const token = jwt.sign(payload, process.env.secrete_key);
+  return token;
+};
+
+module.exports = generateJwt;
