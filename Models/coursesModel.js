@@ -21,7 +21,7 @@ const coursesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-});
+}, { timestamps: true });
 
 const courses = coursesConnection.model("courses", coursesSchema);
 
