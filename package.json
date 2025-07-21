@@ -23,6 +23,7 @@
     "mongoose-sequence": "^6.0.1",
     "morgan": "~1.9.1",
     "multer": "^2.0.1",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "validator": "^13.15.15"
   }

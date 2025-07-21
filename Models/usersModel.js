@@ -34,6 +34,10 @@ const usersSchema = new mongoose.Schema({
     required: false,
     type: String,
   },
+    isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Users = usersConnection.model("users", usersSchema);

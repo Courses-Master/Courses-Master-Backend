@@ -4,7 +4,7 @@ const Users = require("../Models/usersModel");
 const authMiddleware = async (req, res, next) => {
   const findToken = req.headers["authorization"] || req.headers["Authorization"];
   const token = findToken?.split(' ')[1];
-  const excludedPaths = ["/api/users/login", "/api/users/register", "/api/Instructors/addInstructor"];
+  const excludedPaths = ["/api/users/login", "/api/users/register", "/api/Instructors/addInstructor","/api/verify-code"];
 
   if (excludedPaths.includes(req.originalUrl)) {
     return next();
