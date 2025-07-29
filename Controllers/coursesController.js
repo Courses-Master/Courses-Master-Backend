@@ -11,7 +11,7 @@ const getAllCourses = expressAsyncHandler(async (req, res) => {
 const courseById = expressAsyncHandler(async (req, res) => {
   const courseId = req.params.courseId;
   const course = await courses.findById(courseId);
-  res.json({data:course});
+  res.json({data:[course]});
 });
 
 const addCourse = expressAsyncHandler(async (req, res) => {
