@@ -21,6 +21,11 @@ const coursesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  courseImage: {
+    type: String,
+    default: "",
+    required: true,
+  },
 }, { timestamps: true });
 
 const courses = coursesConnection.model("courses", coursesSchema);
