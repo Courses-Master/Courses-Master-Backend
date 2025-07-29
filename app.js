@@ -7,8 +7,7 @@ const VerifyJWT = require('./MiddleWares/VerifyJWT');
 const coursesRouter = require('./routes/coursesRoutes');
 const verifyOTP = require('./Controllers/OTP-Controller');
 const app = express();
-
-app.use(CORS());
+app.use(CORS())
 app.use(express.json());
 app.use("/api", VerifyJWT);
 app.use("/api/verify-code", verifyOTP);

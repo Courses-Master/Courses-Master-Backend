@@ -9,6 +9,7 @@ const {
     login,
     deleteAllUsers
 } = require('../Controllers/usersController');
+
 const validateId = require('../MiddleWares/findByIdError');
 const Users = require('../Models/usersModel');
 const VerifyJWT = require('../MiddleWares/VerifyJWT');
