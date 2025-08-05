@@ -19,7 +19,6 @@ A powerful and scalable RESTful API for managing online courses, instructors, an
 - **Authentication:** JWT, Bcrypt  
 - **File Upload:** Multer  
 - **Environment Config:** dotenv  
-- **Logging & Debugging:** Morgan  
 - **CORS Support:** cors  
 - **Validation:** express-validator  
 
@@ -52,16 +51,15 @@ cd course-master
 npm install
 ```
 
-### 3. Create a `.env` file in the root folder:
+### 3. port && deployment:
 ```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+PORT=3001
+Railway
 ```
 
 ### 4. Run the server:
 ```bash
-npm start
+npm run dev
 ```
 
 ## 🧪 API Testing
@@ -79,11 +77,5 @@ Use **Postman** or **Thunder Client** to test the following:
   Authorization: Bearer <your_token>
   ```
 
-## 🧑‍💻 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
 ## 📄 License
 This project is open source under the [MIT License](LICENSE).
-
-## 🌐 Contact
-Created by [Your Name](https://github.com/your-username) – feel free to reach out!
