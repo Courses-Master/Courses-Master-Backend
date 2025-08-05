@@ -1,34 +1,27 @@
 const expressAsyncHandler = require("express-async-handler");
 const instructors = require("../Models/InstructorsModel");
-const bcrypt = require("bcrypt");
-const path = require("path")
-const fs = require("fs");
-const imagekit = require("../Storage/Storage");
-const generateJwt = require("../utils/generateJwt");
 const OTP = require("../Models/OTPModel");
-const nodemailer = require("nodemailer");
+const transporter = require("../utils/mailTransporter");
+const generateUniqueRandomId = require("../utils/generateRandomId");
 
+// get All Instructors
 const getAllInstructors = expressAsyncHandler(async (req, res) => {
-    const allInstructors = await instructors.find().select("-__v");
+    const allInstructors = await instructors.find()
     res.json({ data: allInstructors });
 });
 
-// const instructorById = expressAsyncHandler(async (req, res) => {
-//   const userId = req.params.userId;
-//   const user = await Users.findById(userId);
-//   res.json(user);
-// });
 
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: "mwmnadl11@gmail.com",
-        pass: 'etew srhw xvxy hgde',
-    },
+// get Instructors by Id
+const instructorById = expressAsyncHandler(async (req, res) => {
+    const instructorId = req.params.instructorId;
+    const instructor = await instructors.findOne({ id: instructorId })
+    res.json({ data: [instructor] });
 });
+
+// add instructor
 const addInstructor = expressAsyncHandler(async (req, res) => {
     const { name, email, phone } = req.body;
+
     const missingFields = [];
     if (!name) missingFields.push("name");
     if (!email) missingFields.push("email");
@@ -38,86 +31,110 @@ const addInstructor = expressAsyncHandler(async (req, res) => {
             message:
                 missingFields.length > 1
                     ? `${missingFields.join(" and ")} are required`
-                    : `${missingFields.join()} is required`,
+                    : `${missingFields[0]} is required`,
         });
     }
 
+    // check if instructor has been added
     const sameEmail = await instructors.findOne({ email });
     if (sameEmail) {
-        return res.status(400).json({ message: "instructor is already exist" });
+        return res.status(400).json({ message: "Instructor already exists" });
     }
 
-    await instructors.create({
-        name,
-        email,
-        phone,
-    });
-    function generateStrongPassword(length = 10) {
+    // generate id for each instructor
+    const id = await generateUniqueRandomId();
+
+    const generateStrongPassword = (length = 10) => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*?";
         let password = "";
         for (let i = 0; i < length; i++) {
             password += chars[Math.floor(Math.random() * chars.length)];
         }
         return password;
-    }
+    };
+    // generate password for each instructor and sent it in email
+    const password = generateStrongPassword();
 
-    await OTP.create({ email, password: generateStrongPassword() });
+    await instructors.create({
+        id,
+        name,
+        email,
+        phone,
+    });
+
+    await OTP.create({ email, password });
 
     await transporter.sendMail({
         to: email,
         from: "Courses Master",
-        subject: "invitation to add you instructor in Course Master",
-        text: `email: ${email}
-        password : ${generateStrongPassword()} 
-        `,
+        subject: "Invitation to join Course Master",
+        text: `Welcome to Course Master!
+Email: ${email}
+Password: ${password}`,
     });
 
     res.status(201).json({ message: "The verification code has been sent to your email." });
 });
 
 
-const login = expressAsyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-    const requiredKeys = [];
+// const login = expressAsyncHandler(async (req, res) => {
+//     const { email, password } = req.body;
+//     const requiredKeys = [];
 
-    if (!email) requiredKeys.push("email");
-    if (!password) requiredKeys.push("password");
+//     if (!email) requiredKeys.push("email");
+//     if (!password) requiredKeys.push("password");
 
-    if (requiredKeys.length > 0) {
-        return res.status(404).json(
-            requiredKeys.length > 1
-                ? { message: `${requiredKeys.join(" and ")} are required` }
-                : { message: `${requiredKeys.join("")} is required` }
-        );
+//     if (requiredKeys.length > 0) {
+//         return res.status(404).json(
+//             requiredKeys.length > 1
+//                 ? { message: `${requiredKeys.join(" and ")} are required` }
+//                 : { message: `${requiredKeys.join("")} is required` }
+//         );
+//     }
+
+//     const user = await Users.findOne({ email: email }).select("-__v");
+//     if (!user.isVerified) {
+//         return res.status(403).json({ message: "Please verify your email first" });
+//     }
+//     if (!user) {
+//         return res.status(404).json({ message: "Invalid credentials" });
+//     }
+
+
+//     const isMatch = await bcrypt.compare(password.toString(), user.password);
+//     if (!isMatch) {
+//         return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     const token = generateJwt({ email, id: user._id });
+
+//     if (user && isMatch) {
+//         res.json({ data: user, token: token });
+//     }
+// });
+
+
+
+const deleteInstructor = expressAsyncHandler(async (req, res) => {
+    const instructorId = req.params["instructorId"]
+    if (!instructorId) {
+        return res.status(422).json({ message: "Id Not Found" });
     }
+    console.log(req.params);
 
-    const user = await Users.findOne({ email: email }).select("-__v");
-    if (!user.isVerified) {
-        return res.status(403).json({ message: "Please verify your email first" });
-    }
-    if (!user) {
-        return res.status(404).json({ message: "Invalid credentials" });
-    }
+    await instructors.deleteOne({ id: instructorId })
+    const allInstructors = await instructors.find()
+    res.json({ message: "instructor deleted successfully", data: allInstructors })
+})
 
-
-    const isMatch = await bcrypt.compare(password.toString(), user.password);
-    if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const token = generateJwt({ email, id: user._id });
-
-    if (user && isMatch) {
-        res.json({ data: user, token: token });
-    }
-});
-
-const deleteAllUsers = expressAsyncHandler(async (req, res) => {
-    await Users.deleteMany({});
-    res.json({ message: "users deleted successfully" });
-});
+// const deleteAllUsers = expressAsyncHandler(async (req, res) => {
+//     await Users.deleteMany({});
+//     res.json({ message: "users deleted successfully" });
+// });
 
 module.exports = {
     addInstructor,
-    getAllInstructors
+    getAllInstructors,
+    instructorById,
+    deleteInstructor
 };
