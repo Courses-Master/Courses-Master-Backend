@@ -14,7 +14,7 @@ app.use("/api", VerifyJWT);
 app.use("/api/verify-code", verifyOTP);
 app.use('/api/users', usersRouter);
 app.use('/api/courses', coursesRouter);
-app.use('/api/instructors',instructorsRoutes);
+app.use('/api/instructors', instructorsRoutes);
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Recourse not found" });

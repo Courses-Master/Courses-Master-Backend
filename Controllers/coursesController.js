@@ -3,15 +3,18 @@ const courses = require("../Models/coursesModel");
 const imagekit = require("../Storage/Storage");
 const fs = require("fs");
 const path = require("path");
+const generateUniqueRandomId = require("../utils/generateRandomId");
+const instructors = require("../Models/InstructorsModel");
+
 const getAllCourses = expressAsyncHandler(async (req, res) => {
-  const allCourses = await courses.find().select("-__v");
+  const allCourses = await courses.find()
   res.json({ data: allCourses });
 });
 
 const courseById = expressAsyncHandler(async (req, res) => {
   const courseId = req.params.courseId;
-  const course = await courses.findById(courseId);
-  res.json({data:[course]});
+  const course = await courses.findOne({ id: courseId })
+  res.json({ data: [course] });
 });
 
 const addCourse = expressAsyncHandler(async (req, res) => {
@@ -51,15 +54,26 @@ const addCourse = expressAsyncHandler(async (req, res) => {
     avatarUrl = uploaded.url;
     fs.unlinkSync(req.file.path);
   }
+  const generateId = await generateUniqueRandomId()
 
+  const assignInstructor = await instructors.findOne({ id: instructor }).select("-_id -__v -has_assigned")
+
+  if (!assignInstructor) {
+    return res.status(404).json({ message: { error: "instructor Not Found" } })
+  }
+  await instructors.updateOne(
+    { id: instructor }, 
+    { $set: { has_assigned: true } }
+  );
   await courses.create({
+    id: generateId,
     title,
     price,
     description,
-    instructor,
+    instructor: assignInstructor,
     courseImage: avatarUrl,
   });
-  const allCourses = await courses.find().select("-__v");
+  const allCourses = await courses.find()
 
   res.json({ data: allCourses });
 });
